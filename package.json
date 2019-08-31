@@ -1,0 +1,14 @@
+{
+  "name": "terminal",
+  "version": "0.0.1",
+  "description": "A minimal framework to create a UI in a terminal",
+  "main": "terminal.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Adrien Cransac",
+  "license": "ISC",
+  "dependencies": {
+    "neo-blessed": "^0.2.0"
+  }
+}
