@@ -77,7 +77,7 @@ function listFrom(other, transform) {
 }
 
 function renderer() {
-  const screen = blessed.screen({ smartCSR: true })
+  const screen = blessed.screen({ smartCSR: true });
 
   screen.append(emptyList());
 
