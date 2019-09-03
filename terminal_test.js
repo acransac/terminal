@@ -1,7 +1,7 @@
 const { inline, sizeWidth, row } = require('./components.js');
 const EventEmitter = require('events');
 const Readline = require('readline');
-const { Source, now, later, value, continuation, floatOn, commit, IO } = require('streamer');
+const { Source, now, later, value, continuation, floatOn, commit, forget, IO } = require('streamer');
 const { renderer, cons, emptyList, atom } = require('./terminal.js');
 
 class dummyEventEmitter extends EventEmitter {
@@ -44,10 +44,10 @@ function sendToRender(render) {
 }
 
 async function populate(stream) {
-  //return floatOn(stream, [now(stream), populate]);
+  //return commit(floatOn(stream, value(now(stream))), populate);
   return commit(floatOn(stream, cons(atom(value(now(stream))), emptyList())), populate);
 }
 
 async function loop(stream) {
-  return loop(await continuation(now(stream))(await later(stream)));
+  return loop(await continuation(now(stream))(forget(await later(stream))));
 }
