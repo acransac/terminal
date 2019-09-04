@@ -9,6 +9,7 @@
   "author": "Adrien Cransac",
   "license": "ISC",
   "dependencies": {
-    "neo-blessed": "^0.2.0"
+    "neo-blessed": "^0.2.0",
+    "streamer": "file:../streamer"
   }
 }
