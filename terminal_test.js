@@ -23,16 +23,16 @@ function display() {
 
   repl.on('line', (line) => events.emit('event', line));
 
-  setTimeout(() => events.emit('event', 'a'), 3000);
+  setTimeout(() => events.emit('event', 'z'), 3000);
 
-  //const render = renderer();
+  const render = renderer();
 
   Source.from(events, "onevent")
-	.withDownstream(async (stream) => loop(await IO(show, console.log)(compose(twoAtomsInline, A, B))(stream)));
+	.withDownstream(async (stream) => loop(await IO(show, render)(compose(twoAtomsInline, A, B))(stream)));
 }
 
 function twoAtomsInline(f, g) {
-  return cons(atom(f), cons(atom(g), emptyList()));
+  return inline(cons(sizeWidth(50, atom(f)), cons(sizeWidth(50, atom(g)), emptyList())));
 }
 
 function A(predecessor) {
@@ -44,7 +44,7 @@ function A(predecessor) {
       return () => 'A';
     }
     else {
-      return predecessor;
+      return predecessor ? predecessor : () => "start";
     }
   }
 }
@@ -55,7 +55,7 @@ function B(predecessor) {
       return () => 'b';
     }
     else {
-      return predecessor;
+      return predecessor ? predecessor : () => "start";
     }
   }
 }
