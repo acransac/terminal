@@ -2,7 +2,7 @@ const { inline, sizeWidth, row } = require('./components.js');
 const EventEmitter = require('events');
 const Readline = require('readline');
 const { Source, now, later, value, continuation, floatOn, commit, forget, IO } = require('streamer');
-const { renderer, cons, emptyList, atom } = require('./terminal.js');
+const { renderer, compose, show, cons, emptyList, atom } = require('./terminal.js');
 
 class dummyEventEmitter extends EventEmitter {
   constructor() {
@@ -23,29 +23,41 @@ function display() {
 
   repl.on('line', (line) => events.emit('event', line));
 
-  //const render = makeDummy();
-  const render = renderer();
+  setTimeout(() => events.emit('event', 'a'), 3000);
 
-  Source.from(events, "onevent").withDownstream(async (stream) => loop(await IO(sendToRender, render)(await populate(stream))));
+  //const render = renderer();
+
+  Source.from(events, "onevent")
+	.withDownstream(async (stream) => loop(await IO(show, console.log)(compose(twoAtomsInline, A, B))(stream)));
 }
 
-function makeDummy() {
-  return message => console.log(message);
+function twoAtomsInline(f, g) {
+  return cons(atom(f), cons(atom(g), emptyList()));
 }
 
-function sendToRender(render) {
-  const continuation = async (stream) => {
-    render(value(now(stream)));
-
-    return commit(stream, continuation);
+function A(predecessor) {
+  return (stream) => {
+    if (value(now(stream)) === 'a') {
+      return () => 'a';
+    }
+    else if (value(now(stream)) === 'A') {
+      return () => 'A';
+    }
+    else {
+      return predecessor;
+    }
   }
-
-  return continuation;
 }
 
-async function populate(stream) {
-  //return commit(floatOn(stream, value(now(stream))), populate);
-  return commit(floatOn(stream, cons(atom(value(now(stream))), emptyList())), populate);
+function B(predecessor) {
+  return (stream) => {
+    if (value(now(stream)) === 'b') {
+      return () => 'b';
+    }
+    else {
+      return predecessor;
+    }
+  }
 }
 
 async function loop(stream) {
