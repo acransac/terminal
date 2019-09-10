@@ -1,16 +1,21 @@
 const blessed = require('neo-blessed');
-const { isNull, cons, car, cdr, atomFrom, listFrom } = require('./terminal.js');
+const { isNull, isAtom, cons, car, cdr, atomFrom, listFrom } = require('./terminal.js');
 
 function row(height) {
   return blessed.Box({width: "100%", height: `${height}%`});
 }
 
-function indent(atom, offset) {
+function indent(offset, atom) {
   return atomFrom(atom, option => option[0] === "left" ? ["left", `${offset}%`] : option);
 }
 
-function vindent(offset, atom) {
-  return atomFrom(atom, option => option[0] === "top" ? ["top", `${offset}%`] : option);
+function vindent(offset, display) {
+  if (isAtom(display)) {
+    return atomFrom(display, option => option[0] === "top" ? ["top", `${offset}%`] : option);
+  }
+  else {
+    return listFrom(display, option => option[0] === "top" ? ["top", `${offset}%`] : option);
+  }
 }
 
 function sizeWidth(size, atom) {
@@ -34,7 +39,7 @@ function inlineImpl(lat, offset) {
     return listFrom(lat);
   }
   else {
-    return cons(indent(car(lat), offset), inlineImpl(cdr(lat), offset + width(car(lat))));
+    return cons(indent(offset, car(lat)), inlineImpl(cdr(lat), offset + width(car(lat))));
   }
 }
 
