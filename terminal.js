@@ -1,4 +1,5 @@
 const blessed = require('neo-blessed');
+const { Readable } = require('stream');
 const { Source, now, later, value, continuation, floatOn, commit, forget, IO } = require('streamer');
 
 // The display is a recursive structure: it is either an atom (a box with border) or a list of displays
@@ -78,7 +79,18 @@ function listFrom(other, transform) {
 }
 
 function renderer() {
-  const screen = blessed.screen({ smartCSR: true });
+  // NoInput prevents Blessed screen from catching keyboard input
+  class NoInput extends Readable {
+    constructor() {
+      super();
+    }
+
+    read() {
+      return null;
+    }
+  };
+
+  const screen = blessed.screen({ smartCSR: true, input: new NoInput() });
 
   screen.append(emptyList());
 
