@@ -5,8 +5,17 @@ function row(height) {
   return blessed.Box({width: "100%", height: `${height}%`});
 }
 
-function indent(offset, atom) {
-  return atomFrom(atom, option => option[0] === "left" ? ["left", `${offset}%`] : option);
+function column(width) {
+  return blessed.Box({width: `${width}%`, height: "100%"});
+}
+
+function indent(offset, display) {
+  if (isAtom(display)) {
+    return atomFrom(display, option => option[0] === "left" ? ["left", `${offset}%`] : option);
+  }
+  else {
+    return listFrom(display, option => option[0] === "left" ? ["left", `${offset}%`] : option);
+  }
 }
 
 function vindent(offset, display) {
@@ -43,4 +52,4 @@ function inlineImpl(lat, offset) {
   }
 }
 
-module.exports = { row, indent, vindent, sizeWidth, sizeHeight, width, inline };
+module.exports = { column, row, indent, vindent, sizeWidth, sizeHeight, width, inline };
