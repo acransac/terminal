@@ -67,5 +67,5 @@ async function loop(stream) {
 }
 
 function test() {
-  return cons(sizeWidth(50, atom("A")), cons(cons(sizeHeight(50, atom("B")), cons(vindent(50, sizeHeight(50, atom("C"))), indent(50, column(50)))), row(90)));
+  return cons(cons(sizeWidth(50, atom("A")), cons(cons(sizeHeight(50, atom("B")), cons(vindent(50, sizeHeight(50, atom("C"))), indent(50, column(50)))), row(90))), cons(cons(atom("D"), vindent(90, row(10))), emptyList()));
 }
