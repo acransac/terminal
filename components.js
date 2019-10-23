@@ -1,5 +1,5 @@
 const blessed = require('neo-blessed');
-const { isNull, isAtom, cons, car, cdr, atomFrom, listFrom } = require('./terminal.js');
+const { atomFrom, car, cdr, cons, isAtom, isNull, listFrom } = require('./terminal.js');
 
 function row(height) {
   return blessed.Box({width: "100%", height: `${height}%`});
@@ -40,16 +40,16 @@ function width(atom) {
 }
 
 function inline(lat) {
+  const inlineImpl = (lat, offset) => {
+    if (isNull(lat)) {
+      return listFrom(lat);
+    }
+    else {
+      return cons(indent(offset, car(lat)), inlineImpl(cdr(lat), offset + width(car(lat))));
+    }
+  };
+
   return inlineImpl(lat, 0);
 }
 
-function inlineImpl(lat, offset) {
-  if (isNull(lat)) {
-    return listFrom(lat);
-  }
-  else {
-    return cons(indent(offset, car(lat)), inlineImpl(cdr(lat), offset + width(car(lat))));
-  }
-}
-
-module.exports = { column, row, indent, vindent, sizeWidth, sizeHeight, width, inline };
+module.exports = { column, indent, inline, row, sizeHeight, sizeWidth, vindent };

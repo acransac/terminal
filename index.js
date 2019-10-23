@@ -1,4 +1,34 @@
-const { column, row, indent, vindent, sizeWidth, sizeHeight, width, inline } = require('./components.js');
-const { emptyList, cons, car, cdr, isAtom, isNull, atom, atomFrom, listFrom, renderer, compose, show } = require('./terminal.js');
+const {
+  column,
+  indent,
+  inline,
+  row,
+  sizeHeight,
+  sizeWidth,
+  vindent,
+} = require('./components.js');
 
-module.exports = { emptyList, cons, car, cdr, isAtom, isNull, atom, atomFrom, listFrom, renderer, compose, show, column, row, indent, vindent, sizeWidth, sizeHeight, width, inline };
+const {
+  atom,
+  compose,
+  cons,
+  emptyList,
+  renderer,
+  show
+} = require('./terminal.js');
+
+module.exports = {
+  atom,
+  column,
+  compose,
+  cons,
+  emptyList,
+  indent,
+  inline,
+  renderer,
+  show,
+  sizeHeight,
+  sizeWidth,
+  row,
+  vindent,
+};

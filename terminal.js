@@ -1,6 +1,6 @@
 const blessed = require('neo-blessed');
 const { Readable } = require('stream');
-const { Source, now, later, value, continuation, floatOn, commit, forget, IO } = require('streamer');
+const { commit, floatOn, now, value } = require('streamer');
 
 // The display is a recursive structure: it is either an atom (a box with border) or a list of displays
 // A list is practically a placeholder box without border, the empty list is a box without children or border
@@ -109,7 +109,7 @@ function compose(template, ...reactiveComponents) {
 	           (composer(...reactiveComponents.map((component, index) => component(predecessors[index])(stream))));
   };
 
-  return composer(...reactiveComponents.map(_ => undefined));
+  return composer(...reactiveComponents.map(() => undefined));
 }
 
 function show(render) {
@@ -123,9 +123,11 @@ function show(render) {
     return stream;
   };
 
-  const shower = component => async (stream) => print(await commit(floatOn(stream, component(first)(stream)), shower(component(second)(stream))));
+  const shower = component => async (stream) => {
+    return print(await commit(floatOn(stream, component(first)(stream)), shower(component(second)(stream))));
+  };
 
   return shower;
 }
 
-module.exports = { emptyList, cons, car, cdr, isAtom, isNull, atom, atomFrom, listFrom, renderer, compose, show };
+module.exports = { atom, atomFrom, car, cdr, compose, cons, emptyList, isAtom, isNull, listFrom, renderer, show };
