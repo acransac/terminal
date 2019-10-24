@@ -78,7 +78,7 @@ function listFrom(other, transform) {
   }).map(transform)));
 }
 
-function renderer() {
+function renderer(output) {
   // NoInput prevents Blessed screen from catching keyboard input
   class NoInput extends Readable {
     constructor() {
@@ -90,7 +90,7 @@ function renderer() {
     }
   };
 
-  const screen = blessed.screen({ smartCSR: true, input: new NoInput() });
+  const screen = blessed.screen({ smartCSR: true, input: new NoInput(), output: output ? output : process.stdout });
 
   screen.append(emptyList());
 
