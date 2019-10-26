@@ -94,13 +94,17 @@ function renderer(output) {
 
   screen.append(emptyList());
 
-  return display => {
+  const render = display => {
     screen.children[0].detach();
 
     screen.append(display);
 
     screen.render();
   };
+
+  const close = () => screen.destroy();
+
+  return [render, close];
 }
 
 function compose(template, ...reactiveComponents) {

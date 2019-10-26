@@ -1,29 +1,43 @@
 const fs = require('fs');
 const { Writable } = require('stream');
-const { emptyList, renderer } = require('./terminal.js');
+const { atom, cons, emptyList, renderer } = require('./terminal.js');
 const Test = require('tester');
 
 function defer(action) {
   return setImmediate(action);
 }
 
-function writeDisplayControl(display, testName) {
+function writeDisplayControl(display, testName, continuation) {
   const control = fs.createWriteStream(`./control_${testName.replace(/ /g, "")}`);
 
   control.on('open', fd => {
-    renderer(control)(display());
+    const [render, close] = renderer(control);
 
-    defer(() => fs.closeSync(fd));
+    render(display());
+
+    close();
+
+    defer(() => {
+      fs.closeSync(fd);
+
+      continuation();
+    });
   });
 }
 
-function showDisplay(display, testName) {
+function showDisplay(display, testName, continuation) {
   console.log("\033[2J\033[HYou will see the display of " + testName);
 
   setTimeout(() => {
-    renderer()(display());
+    const [render, close] = renderer();
+
+    render(display());
 		  
-    setTimeout(() => {}, 2000);
+    setTimeout(() => {
+      close();
+	    
+      continuation();
+    }, 2000);
   }, 2000);
 }
 
@@ -64,15 +78,29 @@ function makeTestableDisplay(display, testName) {
   return [display, testName];
 }
 
+function sequenceReview(review) {
+  const sequencer = testableDisplays => {
+    if (testableDisplays.length === 1) {
+      review(...testableDisplays[0], () => {});
+    }
+    else {
+      review(...testableDisplays[0], () => sequencer(testableDisplays.slice(1)));
+    }
+  };
+
+  return sequencer;
+}
+
 function runReview(testableDisplays, commandLineArguments) {
   if (commandLineArguments.length === 2 || commandLineArguments[2] === "control") {
     Test.run(testableDisplays.map(testableDisplay => makeDisplayTest(...testableDisplay)));
   }
   else if (commandLineArguments[2] === "save") {
-    testableDisplays.forEach(testableDisplay => writeDisplayControl(...testableDisplay));
+    //testableDisplays.forEach(testableDisplay => writeDisplayControl(...testableDisplay));
+    sequenceReview(writeDisplayControl)(testableDisplays);
   }
   else if (commandLineArguments[2] === "look") {
-    testableDisplays.forEach(testableDisplay => showDisplay(...testableDisplay));
+    sequenceReview(showDisplay)(testableDisplays);
   }
   else {
     console.log("Help:");
@@ -90,4 +118,5 @@ function reviewDisplays(testableDisplays) {
 	
 reviewDisplays([
   makeTestableDisplay(emptyList, "Empty List"),
+  makeTestableDisplay(atom, "Atom"),
 ]);
