@@ -57,7 +57,11 @@ function verifyDisplay(display, testName) {
 
     const renderBuffer = new RenderBuffer();
  
-    renderer(renderBuffer)(display());
+    const [render, close] = renderer(renderBuffer);
+
+    render(display());
+
+    close();
 
     defer(() => {
       let control = "";
@@ -93,10 +97,9 @@ function sequenceReview(review) {
 
 function runReview(testableDisplays, commandLineArguments) {
   if (commandLineArguments.length === 2 || commandLineArguments[2] === "control") {
-    Test.run(testableDisplays.map(testableDisplay => makeDisplayTest(...testableDisplay)));
+    Test.runInSequence(testableDisplays.map(testableDisplay => makeDisplayTest(...testableDisplay)));
   }
   else if (commandLineArguments[2] === "save") {
-    //testableDisplays.forEach(testableDisplay => writeDisplayControl(...testableDisplay));
     sequenceReview(writeDisplayControl)(testableDisplays);
   }
   else if (commandLineArguments[2] === "look") {
