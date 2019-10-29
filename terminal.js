@@ -13,6 +13,10 @@ function emptyList() {
 }
 
 function cons(display, list) {
+  if (isAtom(list)) {
+    throw "Cannot cons onto an atom";
+  }
+
   const newList = list.children.reduce((list, display) => {
     list.append(display);
 	
@@ -25,6 +29,13 @@ function cons(display, list) {
 }
 
 function car(list) {
+  if (isAtom(list)) {
+    throw "Cannot take the car of an atom";
+  }
+  else if (isNull(list)) {
+    throw "Cannot take the car of an empty list";
+  }
+
   const firstDisplay = list.children[list.children.length - 1];
 
   if (isAtom(firstDisplay)) {
@@ -36,6 +47,13 @@ function car(list) {
 }
 
 function cdr(list) {
+  if (isAtom(list)) {
+    throw "Cannot take the cdr of an atom";
+  }
+  else if (isNull(list)) {
+    throw "Cannot take the cdr of an empty list";
+  }
+
   return [...list.children.slice(0, -1)].reduce((list, display) => cons(display, list), listFrom(list));
 }
 
@@ -55,6 +73,10 @@ function atom(content) {
 }
 
 function atomFrom(other, transform) {
+  if (!isAtom(other)) {
+    throw "Cannot create an atom by copying a list"
+  }
+
   transform = transform ? transform : option => option;
 
   return blessed.Box(Object.fromEntries(Object.entries({
@@ -68,6 +90,10 @@ function atomFrom(other, transform) {
 }
 
 function listFrom(other, transform) {
+  if (isAtom(other)) {
+    throw "Cannot create a list by copying an atom"
+  }
+
   transform = transform ? transform : option => option;
 
   return blessed.Box(Object.fromEntries(Object.entries({

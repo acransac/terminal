@@ -1,3 +1,4 @@
+const { column, indent, row, sizeHeight, sizeWidth, vindent } = require('./components.js');
 const fs = require('fs');
 const { Writable } = require('stream');
 const { atom, cons, emptyList, renderer } = require('./terminal.js');
@@ -122,4 +123,18 @@ function reviewDisplays(testableDisplays) {
 reviewDisplays([
   makeTestableDisplay(emptyList, "Empty List"),
   makeTestableDisplay(atom, "Atom"),
+  makeTestableDisplay(() => cons(atom(), emptyList()), "List Of One Atom"),
+  makeTestableDisplay(() => sizeWidth(50, atom()), "Atom With Width"),
+  makeTestableDisplay(() => sizeHeight(50, atom()), "Atom With Height"),
+  makeTestableDisplay(() => indent(50, sizeWidth(50, atom())), "Atom With Horizontal Indent"),
+  makeTestableDisplay(() => vindent(50, sizeHeight(50, atom())), "Atom With Vertical Indent"),
+  makeTestableDisplay(() => {
+    return cons(sizeWidth(50, atom()), cons(indent(50, sizeWidth(50, atom())), emptyList()));
+  }, "List Of Two Atoms"),
+  makeTestableDisplay(() => cons(emptyList(), emptyList()), "Nested Empty List"),
+  makeTestableDisplay(() => {
+    return cons(cons(sizeWidth(50, atom()), cons(indent(50, sizeWidth(50, atom())), emptyList())), emptyList());
+  }, "Nested List Of Two Atoms"),
+  makeTestableDisplay(() => cons(atom(), row(50)), "Row Of One Atom"),
+  makeTestableDisplay(() => cons(atom(), column(50)), "Column Of One Atom"),
 ]);
