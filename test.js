@@ -137,4 +137,6 @@ reviewDisplays([
   }, "Nested List Of Two Atoms"),
   makeTestableDisplay(() => cons(atom(), row(50)), "Row Of One Atom"),
   makeTestableDisplay(() => cons(atom(), column(50)), "Column Of One Atom"),
+  makeTestableDisplay(() => cons(atom(), vindent(30, row(40))), "Row Of One Atom With Vertical Indent"),
+  makeTestableDisplay(() => cons(atom(), indent(30, column(40))), "Column Of One Atom With Horizontal Indent"),
 ]);

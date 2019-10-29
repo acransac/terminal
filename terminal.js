@@ -101,6 +101,7 @@ function listFrom(other, transform) {
     height: other.position.height,
     left: other.position.left,
     top: other.position.top,
+    children: other.children,
   }).map(transform)));
 }
 
