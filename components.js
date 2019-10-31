@@ -41,6 +41,10 @@ function width(atom) {
 
 function inline(lat) {
   const inlineImpl = (lat, offset) => {
+    if (isAtom(lat) || (!isNull(lat) && !isAtom(car(lat)))) {
+      throw "Cannot inline an atom or a list of non atomic elements";
+    }
+
     if (isNull(lat)) {
       return listFrom(lat);
     }

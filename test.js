@@ -1,4 +1,4 @@
-const { column, indent, row, sizeHeight, sizeWidth, vindent } = require('./components.js');
+const { column, indent, inline, row, sizeHeight, sizeWidth, vindent } = require('./components.js');
 const fs = require('fs');
 const { Writable } = require('stream');
 const { atom, cons, emptyList, renderer } = require('./terminal.js');
@@ -139,4 +139,13 @@ reviewDisplays([
   makeTestableDisplay(() => cons(atom(), column(50)), "Column Of One Atom"),
   makeTestableDisplay(() => cons(atom(), vindent(30, row(40))), "Row Of One Atom With Vertical Indent"),
   makeTestableDisplay(() => cons(atom(), indent(30, column(40))), "Column Of One Atom With Horizontal Indent"),
+  makeTestableDisplay(() => {
+    return inline(cons(
+	            sizeWidth(20, atom()),
+	            cons(
+		      sizeWidth(30, atom()),
+		      cons(
+		        sizeWidth(50, atom()),
+			emptyList()))));
+  }, "List of Three Atoms Inlined"),
 ]);

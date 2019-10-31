@@ -91,7 +91,7 @@ function listFrom(other, transform) {
   }
 
   return other.children.reduce((list, display) => {
-    list.append(display);
+    list.append(isAtom(display) ? atomFrom(display) : listFrom(display));
 
     return list;
   }, newEmptyListFrom(other, transform));
