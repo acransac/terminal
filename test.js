@@ -8,41 +8,41 @@ function defer(action) {
   return setImmediate(action);
 }
 
-function writeDisplayControl(display, testName, continuation) {
+function writeDisplayControl(produceDisplay, testName, continuation) {
   const control = fs.createWriteStream(`./control_${testName.replace(/ /g, "")}`);
 
   control.on('open', fd => {
     const [render, close] = renderer(control);
 
-    render(display());
+    produceDisplay(render, () => {
+      close();
 
-    close();
+      defer(() => {
+        fs.closeSync(fd);
 
-    defer(() => {
-      fs.closeSync(fd);
-
-      continuation();
+        continuation();
+      });
     });
   });
 }
 
-function showDisplay(display, testName, continuation) {
+function showDisplay(produceDisplay, testName, continuation) {
   console.log("\033[2J\033[HYou will see the display of " + testName);
 
   setTimeout(() => {
     const [render, close] = renderer();
 
-    render(display());
-		  
-    setTimeout(() => {
-      close();
-	    
-      continuation();
-    }, 2000);
+    produceDisplay(render, () => {
+      setTimeout(() => {
+        close();
+              
+        continuation();
+      }, 2000);
+    });
   }, 2000);
 }
 
-function verifyDisplay(display, testName) {
+function verifyDisplay(produceDisplay, testName) {
   const verifier = (finish, check) => {
     class RenderBuffer extends Writable {
       constructor() {
@@ -60,27 +60,34 @@ function verifyDisplay(display, testName) {
  
     const [render, close] = renderer(renderBuffer);
 
-    render(display());
+    produceDisplay(render, () => {
+      close();
 
-    close();
-
-    defer(() => {
-      let control = "";
-      fs.createReadStream(`./control_${testName.replace(/ /g, "")}`, {encoding: "utf8"})
-        .on('data', chunk => control = control + chunk)
-	.on('end', () => finish(check(control === renderBuffer.content)));
+      defer(() => {
+        let control = "";
+        fs.createReadStream(`./control_${testName.replace(/ /g, "")}`, {encoding: "utf8"})
+          .on('data', chunk => control = control + chunk)
+          .on('end', () => finish(check(control === renderBuffer.content)));
+      });
     });
   };
 
   return verifier;
 }
 
-function makeDisplayTest(display, testName) {
-  return Test.makeTest(verifyDisplay(display, testName), testName);
+function makeDisplayTest(produceDisplay, testName) {
+  return Test.makeTest(verifyDisplay(produceDisplay, testName), testName);
 }
 
-function makeTestableDisplay(display, testName) {
-  return [display, testName];
+function makeTestableInertDisplay(display, testName) {
+  return [
+    (render, finish) => {
+      render(display());
+	    
+      finish();
+    },
+    testName
+  ];
 }
 
 function sequenceReview(review) {
@@ -121,25 +128,25 @@ function reviewDisplays(testableDisplays) {
 }
 	
 reviewDisplays([
-  makeTestableDisplay(emptyList, "Empty List"),
-  makeTestableDisplay(atom, "Atom"),
-  makeTestableDisplay(() => cons(atom(), emptyList()), "List Of One Atom"),
-  makeTestableDisplay(() => sizeWidth(50, atom()), "Atom With Width"),
-  makeTestableDisplay(() => sizeHeight(50, atom()), "Atom With Height"),
-  makeTestableDisplay(() => indent(50, sizeWidth(50, atom())), "Atom With Horizontal Indent"),
-  makeTestableDisplay(() => vindent(50, sizeHeight(50, atom())), "Atom With Vertical Indent"),
-  makeTestableDisplay(() => {
+  makeTestableInertDisplay(emptyList, "Empty List"),
+  makeTestableInertDisplay(atom, "Atom"),
+  makeTestableInertDisplay(() => cons(atom(), emptyList()), "List Of One Atom"),
+  makeTestableInertDisplay(() => sizeWidth(50, atom()), "Atom With Width"),
+  makeTestableInertDisplay(() => sizeHeight(50, atom()), "Atom With Height"),
+  makeTestableInertDisplay(() => indent(50, sizeWidth(50, atom())), "Atom With Horizontal Indent"),
+  makeTestableInertDisplay(() => vindent(50, sizeHeight(50, atom())), "Atom With Vertical Indent"),
+  makeTestableInertDisplay(() => {
     return cons(sizeWidth(50, atom()), cons(indent(50, sizeWidth(50, atom())), emptyList()));
   }, "List Of Two Atoms"),
-  makeTestableDisplay(() => cons(emptyList(), emptyList()), "Nested Empty List"),
-  makeTestableDisplay(() => {
+  makeTestableInertDisplay(() => cons(emptyList(), emptyList()), "Nested Empty List"),
+  makeTestableInertDisplay(() => {
     return cons(cons(sizeWidth(50, atom()), cons(indent(50, sizeWidth(50, atom())), emptyList())), emptyList());
   }, "Nested List Of Two Atoms"),
-  makeTestableDisplay(() => cons(atom(), row(50)), "Row Of One Atom"),
-  makeTestableDisplay(() => cons(atom(), column(50)), "Column Of One Atom"),
-  makeTestableDisplay(() => cons(atom(), vindent(30, row(40))), "Row Of One Atom With Vertical Indent"),
-  makeTestableDisplay(() => cons(atom(), indent(30, column(40))), "Column Of One Atom With Horizontal Indent"),
-  makeTestableDisplay(() => {
+  makeTestableInertDisplay(() => cons(atom(), row(50)), "Row Of One Atom"),
+  makeTestableInertDisplay(() => cons(atom(), column(50)), "Column Of One Atom"),
+  makeTestableInertDisplay(() => cons(atom(), vindent(30, row(40))), "Row Of One Atom With Vertical Indent"),
+  makeTestableInertDisplay(() => cons(atom(), indent(30, column(40))), "Column Of One Atom With Horizontal Indent"),
+  makeTestableInertDisplay(() => {
     return inline(cons(
 	            sizeWidth(20, atom()),
 	            cons(
