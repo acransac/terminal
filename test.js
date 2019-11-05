@@ -1,7 +1,8 @@
 const { column, indent, inline, row, sizeHeight, sizeWidth, vindent } = require('./components.js');
 const fs = require('fs');
 const { Writable } = require('stream');
-const { atom, cons, emptyList, renderer } = require('./terminal.js');
+const { continuation, forget, later, now, Source, StreamerTest, value } = require('streamer');
+const { atom, compose, cons, emptyList, renderer, show } = require('./terminal.js');
 const Test = require('tester');
 
 function defer(action) {
@@ -90,6 +91,10 @@ function makeTestableInertDisplay(display, testName) {
   ];
 }
 
+function makeTestableReactiveDisplay(produceDisplay, testName) {
+  return [produceDisplay, testName];
+}
+
 function sequenceReview(review) {
   const sequencer = testableDisplays => {
     if (testableDisplays.length === 1) {
@@ -126,7 +131,53 @@ function runReview(testableDisplays, commandLineArguments) {
 function reviewDisplays(testableDisplays) {
   return runReview(testableDisplays, process.argv);
 }
-	
+
+function test_reactiveDisplay(render, finish) {
+  const again = async (stream) => {
+    if (value(now(stream)) === "end") {
+      return finish();
+    }
+    else {
+      return again(await continuation(now(stream))(forget(await later(stream))));
+    }
+  };
+
+  const showNumbers = maybeShow => predecessor => stream => {
+    if (value(now(stream)).hasOwnProperty("number") && maybeShow(value(now(stream)).number)) {
+      const previousNumbers = predecessor ? predecessor() : "";
+
+      return () => `${previousNumbers}${value(now(stream)).number}\n`; 
+    }
+    else {
+      return predecessor ? predecessor : () => "";
+    }
+  };
+
+  const template = (oddNumbers, evenNumbers) => {
+    return inline(cons(
+	            sizeWidth(50, atom(`Odd:\n${oddNumbers}`)),
+	            cons(
+		      sizeWidth(50, atom(`Even:\n${evenNumbers}`)),
+		      emptyList())));
+  };
+
+  Source.from(StreamerTest.emitSequence([{number: 1},
+                                         {number: 2},
+                                         {number: 3},
+                                         {number: 4},
+                                         {number: 5},
+                                         {number: 6},
+                                         {number: 7},
+                                         {number: 8},
+                                         "end"
+                                        ]), "onevent")
+		          .withDownstream(async (stream) => {
+    return again(
+	     await show(render)(
+	       compose(template, showNumbers(n => n % 2 === 1), showNumbers(n => n % 2 === 0)))(stream));
+  });
+}
+
 reviewDisplays([
   makeTestableInertDisplay(emptyList, "Empty List"),
   makeTestableInertDisplay(atom, "Atom"),
@@ -148,11 +199,12 @@ reviewDisplays([
   makeTestableInertDisplay(() => cons(atom(), indent(30, column(40))), "Column Of One Atom With Horizontal Indent"),
   makeTestableInertDisplay(() => {
     return inline(cons(
-	            sizeWidth(20, atom()),
-	            cons(
-		      sizeWidth(30, atom()),
-		      cons(
-		        sizeWidth(50, atom()),
-			emptyList()))));
+                    sizeWidth(20, atom()),
+                    cons(
+        	      sizeWidth(30, atom()),
+        	      cons(
+        	        sizeWidth(50, atom()),
+        		emptyList()))));
   }, "List of Three Atoms Inlined"),
+  makeTestableReactiveDisplay(test_reactiveDisplay, "Reactive Display"),
 ]);
