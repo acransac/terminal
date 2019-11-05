@@ -151,14 +151,10 @@ function show(render) {
 
   const second = f => g => g;
 
-  const print = async (stream) => {
-    render(value(now(stream))());
-
-    return stream;
-  };
-
   const shower = component => async (stream) => {
-    return print(await commit(floatOn(stream, component(first)(stream)), shower(component(second)(stream))));
+    render(component(first)(stream)());
+
+    return commit(stream, shower(component(second)(stream)));
   };
 
   return shower;
