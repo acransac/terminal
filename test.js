@@ -142,14 +142,14 @@ function test_reactiveDisplay(render, finish) {
     }
   };
 
-  const showNumbers = maybeShow => predecessor => stream => {
+  const showNumbers = maybeShow => noParameters => predecessor => stream => {
     if (value(now(stream)).hasOwnProperty("number") && maybeShow(value(now(stream)).number)) {
-      const previousNumbers = predecessor ? predecessor() : "";
+      const previousNumbers = predecessor ? predecessor : "";
 
-      return () => `${previousNumbers}${value(now(stream)).number}\n`; 
+      return f => f(noParameters)(`${previousNumbers}${value(now(stream)).number}\n`); 
     }
     else {
-      return predecessor ? predecessor : () => "";
+      return predecessor ? f => f(noParameters)(predecessor) : f => f(noParameters)("");
     }
   };
 
