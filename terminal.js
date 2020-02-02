@@ -81,6 +81,7 @@ function atomFrom(other, transform) {
     height: other.position.height,
     left: other.position.left,
     top: other.position.top,
+    label: other.options.label,
     border: {type: "line"},
   }).map(transform)));
 }

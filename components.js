@@ -57,11 +57,7 @@ function inline(lat) {
 }
 
 function label(atom, title) {
-  if (!isAtom(atom)) {
-    throw "Cannot label a list"
-  }
-
-  return blessed.Box(Object.fromEntries([...Object.entries(atom), ["label", title]]));
+  return atomFrom(atom, option => option[0] === "label" ? ["label", title] : option);
 }
 
 module.exports = { column, indent, inline, label, row, sizeHeight, sizeWidth, vindent };
