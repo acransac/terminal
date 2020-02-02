@@ -56,4 +56,12 @@ function inline(lat) {
   return inlineImpl(lat, 0);
 }
 
-module.exports = { column, indent, inline, row, sizeHeight, sizeWidth, vindent };
+function label(atom, title) {
+  if (!isAtom(atom)) {
+    throw "Cannot label a list"
+  }
+
+  return blessed.Box(Object.fromEntries([...Object.entries(atom), ["label", title]]));
+}
+
+module.exports = { column, indent, inline, label, row, sizeHeight, sizeWidth, vindent };

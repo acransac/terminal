@@ -1,4 +1,4 @@
-const { column, indent, inline, row, sizeHeight, sizeWidth, vindent } = require('./components.js');
+const { column, indent, inline, label, row, sizeHeight, sizeWidth, vindent } = require('./components.js');
 const fs = require('fs');
 const { Writable } = require('stream');
 const { continuation, forget, later, now, Source, StreamerTest, value } = require('streamer');
@@ -181,6 +181,7 @@ function test_reactiveDisplay(render, finish) {
 reviewDisplays([
   makeTestableInertDisplay(emptyList, "Empty List"),
   makeTestableInertDisplay(atom, "Atom"),
+  makeTestableInertDisplay(() => label(atom(), "Label"), "Atom With Label"),
   makeTestableInertDisplay(() => cons(atom(), emptyList()), "List Of One Atom"),
   makeTestableInertDisplay(() => sizeWidth(50, atom()), "Atom With Width"),
   makeTestableInertDisplay(() => sizeHeight(50, atom()), "Atom With Height"),
