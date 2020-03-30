@@ -18,6 +18,8 @@ const {
   show
 } = require('./terminal.js');
 
+const TerminalTest = require('./testutils.js');
+
 module.exports = {
   atom,
   column,
@@ -28,9 +30,10 @@ module.exports = {
   inline,
   label,
   renderer,
+  row,
   show,
   sizeHeight,
   sizeWidth,
-  row,
+  TerminalTest,
   vindent,
 };
