@@ -7,42 +7,42 @@ function defer(action) {
   return setImmediate(action);
 }
 
-function writeDisplayControl(produceDisplay, testName, continuation) {
+function writeDisplayControl(produceDisplay, testName, init, continuation) {
   const control = fs.createWriteStream(`./control_${testName.replace(/ /g, "")}`);
 
   control.on('open', fd => {
-    const [render, close] = renderer(control);
+    return init(control, (...restAndClose) => {
+      return produceDisplay(...restAndClose.slice(0, -1), () => {
+        restAndClose[restAndClose.length - 1]();
 
-    produceDisplay(render, () => {
-      close();
+        defer(() => {
+          fs.closeSync(fd);
 
-      defer(() => {
-        fs.closeSync(fd);
-
-        continuation();
+          return continuation();
+        });
       });
     });
   });
 }
 
-function showDisplay(produceDisplay, testName, continuation) {
+function showDisplay(produceDisplay, testName, init, continuation) {
   console.log("\033[2J\033[HYou will see the display of " + testName);
 
   setTimeout(() => {
-    const [render, close] = renderer();
+    return init(process.stdout, (...restAndClose) => {
+      return produceDisplay(...restAndClose.slice(0, -1), () => {
+        setTimeout(() => {
+          restAndClose[restAndClose.length - 1]();
 
-    produceDisplay(render, () => {
-      setTimeout(() => {
-        close();
-              
-        continuation();
-      }, 2000);
+          return continuation();
+        }, 2000);
+      });
     });
   }, 2000);
 }
 
-function verifyDisplay(produceDisplay, testName) {
-  const verifier = (finish, check) => {
+function verifyDisplay(produceDisplay, testName, init) {
+  return (finish, check) => {
     class RenderBuffer extends Writable {
       constructor() {
         super();
@@ -56,26 +56,24 @@ function verifyDisplay(produceDisplay, testName) {
     };
 
     const renderBuffer = new RenderBuffer();
- 
-    const [render, close] = renderer(renderBuffer);
 
-    produceDisplay(render, () => {
-      close();
+    return init(renderBuffer, (...restAndClose) => {
+      return produceDisplay(...restAndClose.slice(0, -1), () => {
+        restAndClose[restAndClose.length - 1]();
 
-      defer(() => {
-        let control = "";
-        fs.createReadStream(`./control_${testName.replace(/ /g, "")}`, {encoding: "utf8"})
-          .on('data', chunk => control = control + chunk)
-          .on('end', () => finish(check(control === renderBuffer.content)));
+        defer(() => {
+          let control = "";
+          fs.createReadStream(`./control_${testName.replace(/ /g, "")}`, {encoding: "utf8"})
+            .on('data', chunk => control = control + chunk)
+            .on('end', () => finish(check(control === renderBuffer.content)));
+        });
       });
     });
   };
-
-  return verifier;
 }
 
-function makeDisplayTest(produceDisplay, testName) {
-  return Test.makeTest(verifyDisplay(produceDisplay, testName), testName);
+function makeDisplayTest(produceDisplay, testName, init) {
+  return Test.makeTest(verifyDisplay(produceDisplay, testName, init), testName);
 }
 
 function makeTestableInertDisplay(display, testName) {
@@ -85,12 +83,17 @@ function makeTestableInertDisplay(display, testName) {
 	    
       finish();
     },
-    testName
+    testName,
+    (displayTarget, continuation) => continuation(...renderer(displayTarget))
   ];
 }
 
-function makeTestableReactiveDisplay(produceDisplay, testName) {
-  return [produceDisplay, testName];
+function makeTestableReactiveDisplay(produceDisplay, testName, init) {
+  return [
+    produceDisplay,
+    testName,
+    init ? init : (displayTarget, continuation) => continuation(...renderer(displayTarget))
+  ];
 }
 
 function sequenceReview(review) {
