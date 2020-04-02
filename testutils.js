@@ -62,10 +62,8 @@ function verifyDisplay(produceDisplay, testName, init) {
         restAndClose[restAndClose.length - 1]();
 
         defer(() => {
-          let control = "";
-          fs.createReadStream(`./control_${testName.replace(/ /g, "")}`, {encoding: "utf8"})
-            .on('data', chunk => control = control + chunk)
-            .on('end', () => finish(check(control === renderBuffer.content)));
+	  return finish(check(fs.readFileSync(`./control_${testName.replace(/ /g, "")}`, {encoding: "utf8"})
+		                === renderBuffer.content));
         });
       });
     });
