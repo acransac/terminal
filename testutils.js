@@ -3,23 +3,33 @@ const { Writable } = require('stream');
 const { renderer } = require('./terminal.js');
 const Test = require('tester');
 
+class RenderBuffer extends Writable {
+  constructor() {
+    super();
+
+    this.content = "";
+  }
+
+  write(chunk) {
+    this.content = this.content + chunk;
+  }
+};
+
 function defer(action) {
   return setImmediate(action);
 }
 
 function writeDisplayControl(produceDisplay, testName, init, continuation) {
-  const control = fs.createWriteStream(`./control_${testName.replace(/ /g, "")}`);
+  const control = new RenderBuffer();
 
-  control.on('open', fd => {
-    return init(control, (...restAndClose) => {
-      return produceDisplay(...restAndClose.slice(0, -1), () => {
-        restAndClose[restAndClose.length - 1]();
+  return init(control, (...restAndClose) => {
+    return produceDisplay(...restAndClose.slice(0, -1), () => {
+      restAndClose[restAndClose.length - 1]();
 
-        defer(() => {
-          fs.closeSync(fd);
+      defer(() => {
+        fs.writeFileSync(`./control_${testName.replace(/ /g, "")}`, control.content, {encoding: "utf8"});
 
-          return continuation();
-        });
+        return continuation();
       });
     });
   });
@@ -43,17 +53,6 @@ function showDisplay(produceDisplay, testName, init, continuation) {
 
 function verifyDisplay(produceDisplay, testName, init) {
   return (finish, check) => {
-    class RenderBuffer extends Writable {
-      constructor() {
-        super();
-
-        this.content = "";
-      }
-
-      write(chunk) {
-        this.content = this.content + chunk;
-      }
-    };
 
     const renderBuffer = new RenderBuffer();
 
