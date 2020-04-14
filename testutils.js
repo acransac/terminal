@@ -28,11 +28,9 @@ function writeDisplayControl(produceDisplay, testName, init, continuation) {
 
       defer(() => {
         fs.writeFileSync(`./control_${testName.replace(/ /g, "")}`, control.content, {encoding: "utf8"});
-
-        return continuation();
       });
     });
-  });
+  }, continuation);
 }
 
 function showDisplay(produceDisplay, testName, init, continuation) {
@@ -43,17 +41,14 @@ function showDisplay(produceDisplay, testName, init, continuation) {
       return produceDisplay(...restAndClose.slice(0, -1), () => {
         setTimeout(() => {
           restAndClose[restAndClose.length - 1]();
-
-          return continuation();
         }, 2000);
       });
-    });
+    }, continuation);
   }, 2000);
 }
 
 function verifyDisplay(produceDisplay, testName, init) {
   return (finish, check) => {
-
     const renderBuffer = new RenderBuffer();
 
     return init(renderBuffer, (...restAndClose) => {
@@ -61,16 +56,27 @@ function verifyDisplay(produceDisplay, testName, init) {
         restAndClose[restAndClose.length - 1]();
 
         defer(() => {
-	  return finish(check(fs.readFileSync(`./control_${testName.replace(/ /g, "")}`, {encoding: "utf8"})
-		                === renderBuffer.content));
+	  return check(fs.readFileSync(`./control_${testName.replace(/ /g, "")}`, {encoding: "utf8"}) === renderBuffer.content);
         });
       });
-    });
+    }, finish);
   };
 }
 
 function makeDisplayTest(produceDisplay, testName, init) {
   return Test.makeTest(verifyDisplay(produceDisplay, testName, init), testName);
+}
+
+function makeInit() {
+  return (displayTarget, test, continuation) => {
+    const [render, terminate] = renderer(displayTarget);
+
+    return test(render, () => {
+      terminate();
+
+      return continuation();
+    });
+  };
 }
 
 function makeTestableInertDisplay(display, testName) {
@@ -81,7 +87,7 @@ function makeTestableInertDisplay(display, testName) {
       finish();
     },
     testName,
-    (displayTarget, continuation) => continuation(...renderer(displayTarget))
+    makeInit()
   ];
 }
 
@@ -89,7 +95,7 @@ function makeTestableReactiveDisplay(produceDisplay, testName, init) {
   return [
     produceDisplay,
     testName,
-    init ? init : (displayTarget, continuation) => continuation(...renderer(displayTarget))
+    init ? init : makeInit()
   ];
 }
 
