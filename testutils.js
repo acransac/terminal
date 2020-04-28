@@ -114,7 +114,7 @@ function sequenceReview(review) {
 
 function runReview(testableDisplays, commandLineArguments) {
   if (commandLineArguments.length === 2 || commandLineArguments[2] === "control") {
-    Test.runInSequence(testableDisplays.map(testableDisplay => makeDisplayTest(...testableDisplay)));
+    return Test.runInSequence(testableDisplays.map(testableDisplay => makeDisplayTest(...testableDisplay)));
   }
   else if (commandLineArguments[2] === "save") {
     sequenceReview(writeDisplayControl)(testableDisplays);
