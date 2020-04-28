@@ -112,9 +112,9 @@ function sequenceReview(review) {
   return sequencer;
 }
 
-function runReview(testableDisplays, commandLineArguments) {
+function runReview(testableDisplays, commandLineArguments, testSuiteName) {
   if (commandLineArguments.length === 2 || commandLineArguments[2] === "control") {
-    return Test.runInSequence(testableDisplays.map(testableDisplay => makeDisplayTest(...testableDisplay)));
+    return Test.runInSequence(testableDisplays.map(testableDisplay => makeDisplayTest(...testableDisplay)), testSuiteName);
   }
   else if (commandLineArguments[2] === "save") {
     sequenceReview(writeDisplayControl)(testableDisplays);
@@ -132,8 +132,8 @@ function runReview(testableDisplays, commandLineArguments) {
   }
 }
 
-function reviewDisplays(testableDisplays) {
-  return runReview(testableDisplays, process.argv);
+function reviewDisplays(testableDisplays, testSuiteName) {
+  return runReview(testableDisplays, process.argv, testSuiteName);
 }
 
 module.exports = {
