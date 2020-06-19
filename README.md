@@ -74,3 +74,31 @@ Example:
     $ node example.js
 ```
 (SCREENSHOT)
+
+Note: The last example display looks the same as the previous one, except that it is a list and not an atom.
+
+## Size And Position Displays
+`sizeWidth` and `sizeHeight` are used to size atoms. `indent` and `vindent` position displays. They allow to make list displays with several atoms or lists visible:
+* `sizeWidth:: (Number, Atom<Display>) -> Atom<Display>`
+  | Parameter | Type           | Description        |
+  |-----------|----------------|--------------------|
+  | size      | Number         | The atom's width proportionally to the underlying list's width if any. Otherwise, it is proportional to the screen's width. Expressed in percentage |
+  | atom      | Atom\<Display> | The atom to resize |
+
+* `sizeHeight:: (Number, Atom<Display>) -> Atom<Display>`
+  | Parameter | Type           | Description        |
+  |-----------|----------------|--------------------|
+  | size      | Number         | The atom's height proportionally to the underlying list's height if any. Otherwise, it is proportional to the screen's height. Expressed in percentage |
+  | atom      | Atom\<Display> | The atom to resize |
+
+* `indent:: (Number, Display) -> Display`
+  | Parameter | Type    | Description         |
+  |-----------|---------|---------------------|
+  | offset    | Number  | The display's offset from the underlying list's left edge if any. Otherwise, it is from the screen's left edge. Expressed in percentage of the underlier's width |
+  | display   | Display | The display to move |
+
+* `vindent:: (Number, Display) -> Display`
+  | Parameter | Type    | Description         |
+  |-----------|---------|---------------------|
+  | offset    | Number  | The display's offset from the underlying list's top edge if any. Otherwise, it is from the screen's top edge. Expressed in percentage of the underlier's height |
+  | display   | Display | The display to move |
