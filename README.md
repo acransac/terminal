@@ -102,3 +102,57 @@ Note: The last example display looks the same as the previous one, except that i
   |-----------|---------|---------------------|
   | offset    | Number  | The display's offset from the underlying list's top edge if any. Otherwise, it is from the screen's top edge. Expressed in percentage of the underlier's height |
   | display   | Display | The display to move |
+
+Examples:
+1.
+
+```javascript
+    const { atom, indent, renderer, sizeHeight, sizeWidth, vindent } = require('@acransac/terminal');
+
+    const [render, terminate] = renderer();
+
+    render(vindent(25, indent(25, sizeHeight(50, sizeWidth(50, atom("abc"))))));
+
+    setTimeout(terminate, 2000);
+```
+
+```shell
+    $ node example.js
+```
+(SCREENSHOT)
+
+2.
+
+```javascript
+    const { atom, cons, emptyList, indent, renderer, vindent } = require('@acransac/terminal');
+
+    const [render, terminate] = renderer();
+
+    render(vindent(10, indent(10, cons(atom("abc"), emptyList()))));
+
+    setTimeout(terminate, 2000);
+```
+
+```shell
+    $ node example.js
+```
+(SCREENSHOT)
+
+3.
+
+```javascript
+    const { atom, cons, emptyList, indent, renderer, sizeWidth } = require('@acransac/terminal');
+
+    const [render, terminate] = renderer();
+
+    render(cons(sizeWidth(50, atom("abc")),
+                cons(indent(50, sizeWidth(50, atom("def"))),
+                     emptyList())));
+
+    setTimeout(terminate, 2000);
+```
+
+```shell
+    $ node example.js
+```
+(SCREENSHOT)
