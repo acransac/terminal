@@ -17,7 +17,7 @@ and import the needed functionalities:
 ```
 
 ## Make An Inert Atomic Display
-The rendering engine is initialized with `renderer`. The latter returns function handles to render a display and terminate the engine. An atomic display is created with `atom` and passed to the render handle. Then, the engine is terminated:
+The rendering engine is initialized with `renderer`. The latter returns function handles to render a display and terminate the engine. An atomic display is created with `atom` and passed to the render handle. Then, the engine is terminated. An atom's box can be labelled with `label`:
 * `renderer:: Maybe<Stream.Writable> -> (Display -> IO (), () -> IO ())`
   | Parameter / Returned | Type                            | Description             |
   |----------------------|---------------------------------|-------------------------|
@@ -28,7 +28,14 @@ The rendering engine is initialized with `renderer`. The latter returns function
   |-----------|--------|---------------------------------------|
   | content   | String | The text to print within the atom box |
 
-Example:
+* `label:: (Atom<Display>, String) -> Atom<Display>`
+  | Parameter | Type           | Description       |
+  |-----------|----------------|-------------------|
+  | atom      | Atom\<Display> | The atom to label |
+  | title     | String         | The label's text  |
+
+Examples:
+1.
 
 ```javascript
     const { atom, renderer } = require('@acransac/terminal');
@@ -36,6 +43,23 @@ Example:
     const [render, terminate] = renderer();
 
     render(atom("abc"));
+
+    setTimeout(terminate, 2000);
+```
+
+```shell
+    $ node example.js
+```
+(SCREENSHOT)
+
+2.
+
+```javascript
+    const { atom, label, renderer } = require('@acransac/terminal');
+
+    const [render, terminate] = renderer();
+
+    render(label(atom("abc"), "example"));
 
     setTimeout(terminate, 2000);
 ```
@@ -123,7 +147,7 @@ Note: The last example display looks the same as the previous one, except that i
 (SCREENSHOT)
 
 ## Size And Position Displays
-`sizeWidth` and `sizeHeight` are used to size atoms. `indent` and `vindent` position displays. They allow to make list displays with several atoms or lists visible:
+`sizeWidth` and `sizeHeight` are used to size atoms. `indent` and `vindent` position displays. They allow to make list displays with several atoms or lists visible. Also, `inline` places a list of atoms in a row:
 * `sizeWidth:: (Number, Atom<Display>) -> Atom<Display>`
   | Parameter | Type           | Description        |
   |-----------|----------------|--------------------|
@@ -147,6 +171,11 @@ Note: The last example display looks the same as the previous one, except that i
   |-----------|---------|---------------------|
   | offset    | Number  | The display's offset from the underlying list's top edge if any. Otherwise, it is from the screen's top edge. Expressed in percentage of the underlier's height |
   | display   | Display | The display to move |
+
+* `inline:: List<Atom<Display>> -> Display`
+  | Parameter | Type                  | Description |
+  |-----------|-----------------------|-------------|
+  | lat       | List\<Atom\<Display>> | A display that is a list of atoms with specified widths that are to be indented so that they show in a row |
 
 Examples:
 1.
@@ -193,6 +222,25 @@ Examples:
     render(cons(sizeWidth(50, atom("abc")),
                 cons(indent(50, sizeWidth(50, atom("def"))),
                      emptyList())));
+
+    setTimeout(terminate, 2000);
+```
+
+```shell
+    $ node example.js
+```
+(SCREENSHOT)
+
+4.
+
+```javascript
+    const { atom, cons, emptyList, inline, renderer, sizeWidth } = require('@acransac/terminal');
+
+    const [render, terminate] = renderer();
+
+    render(inline(cons(sizeWidth(50, atom("abc")),
+                       cons(sizeWidth(50, atom("def")),
+                            emptyList()))));
 
     setTimeout(terminate, 2000);
 ```
