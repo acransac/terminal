@@ -46,7 +46,7 @@ Example:
 (SCREENSHOT)
 
 ## Make An Inert List Display
-As mentioned before, **terminal**'s tooling inherits the fundamental notions of the Lisp dialects. A display is a recursive structure expressed as nested lists of displays. It is built by `cons`'ing displays onto lists, ending such ramified chains with the `emptyList`:
+As mentioned before, **terminal**'s tooling inherits the fundamental notions of the Lisp dialects. A display is a recursive structure expressed as nested lists of displays. It is built by `cons`'ing displays onto lists, ending such ramified chains with the `emptyList`. The latter can be dimensioned in height or in width with `row` or `column`:
 * `cons:: (Display, List<Display>) -> List<Display>`
   | Parameter | Type           | Description                           |
   |-----------|----------------|---------------------------------------|
@@ -58,7 +58,18 @@ As mentioned before, **terminal**'s tooling inherits the fundamental notions of 
   |-----------|----------------|--------------------------------------------------------------------------------------------|
   | _returned_| List\<Display> | A list display printing nothing. The starting point to which useful displays are prepended |
 
-Example:
+* `row:: Number -> List<Display>`
+  | Parameter | Type   | Description |
+  |-----------|--------|-------------|
+  | height    | Number | The empty list's height proportionally to the underlying list's height if any. Otherwise, it is proportional to the screen's height. Expressed in percentage |
+
+* `column:: Number -> List<Display>`
+  | Parameter | Type   | Description |
+  |-----------|--------|-------------|
+  | width     | Number | The empty list's width proportionally to the underlying list's width if any. Otherwise, it is proportional to the screen's width. Expressed in percentage |
+
+Examples:
+1.
 
 ```javascript
     const { atom, cons, emptyList, renderer } = require('@acransac/terminal');
@@ -76,6 +87,40 @@ Example:
 (SCREENSHOT)
 
 Note: The last example display looks the same as the previous one, except that it is a list and not an atom.
+
+2.
+
+```javascript
+    const { atom, cons, renderer, row } = require('@acransac/terminal');
+
+    const [render, terminate] = renderer();
+
+    render(cons(atom("abc"), row(50)));
+
+    setTimeout(terminate, 2000);
+```
+
+```shell
+    $ node example.js
+```
+(SCREENSHOT)
+
+3.
+
+```javascript
+    const { atom, column, cons, renderer } = require('@acransac/terminal');
+
+    const [render, terminate] = renderer();
+
+    render(cons(atom("abc"), column(50)));
+
+    setTimeout(terminate, 2000);
+```
+
+```shell
+    $ node example.js
+```
+(SCREENSHOT)
 
 ## Size And Position Displays
 `sizeWidth` and `sizeHeight` are used to size atoms. `indent` and `vindent` position displays. They allow to make list displays with several atoms or lists visible:
