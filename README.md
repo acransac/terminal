@@ -275,4 +275,44 @@ A reactive display changes as the user interacts with the application or network
   |-----------|------------------|------------------------------------------|
   | render    | Display -> IO () | The render handle returned by `renderer` |
 
+Example:
+
+```javascript
+    const { continuation, forget, later, now, Source, StreamerTest, value } = require('@acransac/streamer');
+    const { atom, compose, renderer, show } = require('@acransac/terminal');
+
+    const [render, terminate] = renderer();
+
+    const loop = async (stream) => {
+      if (value(now(stream)) === "end") {
+        return terminate();
+      }
+      else {
+        return loop(await continuation(now(stream))(forget(await later(stream))));
+      }
+    };
+
+    const template = component => atom(component);
+
+    const component = noParameters => predecessor => stream => {
+      const processed = predecessor ? predecessor : "";
+
+      if (value(now(stream)) === "end") {
+        return f => f(noParameters)(processed);
+      }
+      else {
+        return f => f(noParameters)(`${processed}${value(now(stream))}`);
+      }
+    };
+
+    Source.from(StreamerTest.emitSequence(["a", "b", "c", "end"], 1000), "onevent").withDownstream(async (stream) => {
+      return loop(await show(render)(compose(template, component))(stream));
+    });
+```
+
+```shell
+    $ node example.js
+```
+(GIF)
+
 ## Test The Display
