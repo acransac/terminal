@@ -323,10 +323,10 @@ Example:
   | testableDisplays | [TestableDisplay] | An array of testable displays, whether inert or reactive             |
   | testSuiteName    | Maybe\<String>    | The name of the test suite that appears in logs. Default: Test Suite |
 
-* `TerminalTest.makeTestableInertDisplay:: (Display, String) -> TestableDisplay`
-  | Parameter | Type    | Description                               |
-  |-----------|---------|-------------------------------------------|
-  | display   | Display | An inert display                          |
+* `TerminalTest.makeTestableInertDisplay:: (() -> Display, String) -> TestableDisplay`
+  | Parameter | Type          | Description                         |
+  |-----------|---------------|-------------------------------------|
+  | display   | () -> Display | A deferred inert display            |
   | testName  | String  | The name of the test that appears in logs |
 
 * `TerminalTest.makeTestableReactiveDisplay:: (ReactiveDisplayTest, String, Maybe<TestInitializer>) -> TestableDisplay`
@@ -342,3 +342,124 @@ Example:
   | displayTarget | Stream.Writable        | A reference to the target for writing the characters and escape sequences of the display. It could be a file or the standard output depending on the mode of the test runner |
   | test          | ReactiveDisplayTest    | A reference to the test function to call once the initialization is done  |
   | finish        | () -> IO ()            | A reference to the continuation of the test to call once the test is done |
+
+Examples:
+1.
+
+```javascript
+    const { continuation, forget, later, now, Source, StreamerTest, value } = require('@acransac/streamer');
+    const { atom, compose, show, TerminalTest } = require('@acransac/terminal');
+
+    function reactiveDisplayTest(render, finish) {
+      const loop = async (stream) => {
+        if (value(now(stream)) === "end") {
+          return finish();
+        }
+        else {
+          return loop(await continuation(now(stream))(forget(await later(stream))));
+        }
+      };
+
+      const template = component => atom(component);
+
+      const component = noParameters => predecessor => stream => {
+        const processed = predecessor ? predecessor : "";
+
+        if (value(now(stream)) === "end") {
+          return f => f(noParameters)(processed);
+        }
+        else {
+          return f => f(noParameters)(`${processed}${value(now(stream))}`);
+        }
+      };
+
+      Source.from(StreamerTest.emitSequence(["a", "b", "c", "end"], 1000), "onevent").withDownstream(async (stream) => {
+        return loop(await show(render)(compose(template, component))(stream));
+      });
+    }
+
+    TerminalTest.reviewDisplays([
+      TerminalTest.makeTestableInertDisplay(() => atom("abc"), "Inert Display"),
+      TerminalTest.makeTestableReactiveDisplay(reactiveDisplayTest, "Reactive Display")
+    ], "Example Tests");
+```
+
+```shell
+    $ node example.js look
+```
+(GIF)
+
+```shell
+    $ node example.js save
+    $ node example.js control
+    --------------------
+    Example Tests:
+
+        2 / 2 test(s) passed
+    --------------------
+```
+
+2.
+
+```javascript
+    const { continuation, forget, later, now, Source, StreamerTest, value } = require('@acransac/streamer');
+    const { atom, compose, renderer, show, TerminalTest } = require('@acransac/terminal');
+
+    function reactiveDisplayTest(render, finish) {
+      const loop = async (stream) => {
+        if (value(now(stream)) === "end") {
+          return finish();
+        }
+        else {
+          return loop(await continuation(now(stream))(forget(await later(stream))));
+        }
+      };
+
+      const template = component => atom(component);
+
+      const component = noParameters => predecessor => stream => {
+        const processed = predecessor ? predecessor : "";
+
+        if (value(now(stream)) === "end") {
+          return f => f(noParameters)(processed);
+        }
+        else {
+          return f => f(noParameters)(`${processed}${value(now(stream))}`);
+        }
+      };
+
+      return async (stream) => loop(await show(render)(compose(template, component))(stream));
+    }
+
+    function testInitializer(displayTarget, test, finish) {
+      const [render, terminate] = renderer(displayTarget);
+
+      const conclude = () => {
+        terminate();
+
+        return finish();
+      }
+
+      Source.from(StreamerTest.emitSequence(["a", "b", "c", "end"], 1000), "onevent")
+                              .withDownstream(async (stream) => test(render, conclude)(stream));
+    }
+
+    TerminalTest.reviewDisplays([
+      TerminalTest.makeTestableReactiveDisplay(reactiveDisplayTest, "Reactive Display With Initializer", testInitializer)
+    ], "Example Tests");
+```
+
+```shell
+    $ node example.js look
+```
+(GIF)
+
+```shell
+    $ node example.js save
+    $ node example.js control
+    --------------------
+    Example Tests:
+
+        1 / 1 test(s) passed
+    --------------------
+```
