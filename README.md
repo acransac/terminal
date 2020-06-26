@@ -50,7 +50,7 @@ Examples:
 ```shell
     $ node example.js
 ```
-(SCREENSHOT)
+![Alt text](doc/make_an_inert_atomic_display_1.png?raw=true)
 
 2.
 
