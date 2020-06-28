@@ -452,7 +452,7 @@ Examples:
 ```shell
     $ node example.js look
 ```
-(GIF)
+![Alt text](doc/screen_capture_10.gif?raw=true)
 
 ```shell
     $ node example.js save
