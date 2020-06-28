@@ -313,7 +313,7 @@ Example:
 ```shell
     $ node example.js
 ```
-(GIF)
+![Alt text](doc/screen_capture_8.gif?raw=true)
 
 ## Test The Display
 `TerminalTest.reviewDisplays` introduces testing a sequence of displays. A display test is created with `makeTestableInertDisplay` or `makeTestableReactiveDisplay`. When run, a script executing this review accepts one command line option: `look` shows the displays in turn so that they can be visually checked. `save` writes the characters and escape sequences of the displays to files so that they can be programmatically verified. `control` runs the actual test, comparing the generated displays to the control files and logging the successes and failures. It is the default option:
