@@ -1,5 +1,5 @@
 const { column, indent, inline, label, row, sizeHeight, sizeWidth, vindent } = require('./components.js');
-const { continuation, forget, later, now, Source, StreamerTest, value } = require('streamer');
+const { continuation, forget, later, now, Source, StreamerTest, value } = require('@acransac/streamer');
 const { atom, compose, cons, emptyList, show } = require('./terminal.js');
 const Test = require('./testutils.js');
 

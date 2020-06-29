@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "neo-blessed": "^0.2.0",
-    "streamer": "file:../streamer",
+    "@acransac/streamer": "file:../streamer",
     "tester": "file:../tester"
   }
 }

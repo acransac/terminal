@@ -1,66 +1,19 @@
 const blessed = require('neo-blessed');
 const { Readable } = require('stream');
-const { commit, floatOn, now, value } = require('streamer');
+const { commit } = require('@acransac/streamer');
 
-// The display is a recursive structure: it is either an atom (a box with border) or a list of displays
-// A list is practically a placeholder box without border, the empty list is a box without children or border
+// # List Processing
+// A list is practically a placeholder box without border, the empty list is a box without children or border.
 //
-// Note that Blessed structures the screen in a tree of nodes like a DOM, and everything is a node. Boxes
+// Note that blessed structures the screen in a tree of nodes like a DOM, and everything is a node. Boxes
 // are elements (which are nodes) but the screen (a node) is not an element. It can't be created twice
-// so that displays to render are always built on top of a placeholder box then attached to the screen
-function emptyList() {
-  return blessed.Box({width: "100%", height: "100%"});
-}
+// so that displays to render are always built on top of a placeholder box then attached to the screen.
 
-function cons(display, list) {
-  if (isAtom(list)) {
-    throw "Cannot cons onto an atom";
-  }
-
-  const newList = listFrom(list);
-
-  newList.append(display);
-
-  return newList;
-}
-
-function car(list) {
-  if (isAtom(list)) {
-    throw "Cannot take the car of an atom";
-  }
-  else if (isNull(list)) {
-    throw "Cannot take the car of an empty list";
-  }
-
-  const firstDisplay = list.children[list.children.length - 1];
-
-  if (isAtom(firstDisplay)) {
-    return atomFrom(firstDisplay);
-  }
-  else {
-    return listFrom(firstDisplay);
-  }
-}
-
-function cdr(list) {
-  if (isAtom(list)) {
-    throw "Cannot take the cdr of an atom";
-  }
-  else if (isNull(list)) {
-    throw "Cannot take the cdr of an empty list";
-  }
-
-  return [...list.children.slice(0, -1)].reduce((list, display) => cons(display, list), newEmptyListFrom(list));
-}
-
-function isAtom(display) {
-  return display.border ? true : false;
-}
-
-function isNull(list) {
-  return !isAtom(list) && list.children.length === 0;
-}
-
+/*
+ * Make an atom
+ * @param {string} content - The text to display in the atom
+ * @return {Atom}
+ */
 function atom(content) {
   return blessed.Box({
     content: content,
@@ -68,6 +21,12 @@ function atom(content) {
   });
 }
 
+/*
+ * Copy an atom, possibly transforming it
+ * @param {Atom} other - The atom to copy
+ * @param {function} [transform: option => option] - The transformation to apply on the options (content, width, height, left, top, label or border)
+ * @return {Atom}
+ */
 function atomFrom(other, transform) {
   if (!isAtom(other)) {
     throw "Cannot create an atom by copying a list"
@@ -86,6 +45,95 @@ function atomFrom(other, transform) {
   }).map(transform)));
 }
 
+/*
+ * Get the head (first element) of a list
+ * @param {List} list - The list to retrieve the head from
+ * @return {Display}
+ */
+function car(list) {
+  if (isAtom(list)) {
+    throw "Cannot take the car of an atom";
+  }
+  else if (isNull(list)) {
+    throw "Cannot take the car of an empty list";
+  }
+
+  const firstDisplay = list.children[list.children.length - 1];
+
+  if (isAtom(firstDisplay)) {
+    return atomFrom(firstDisplay);
+  }
+  else {
+    return listFrom(firstDisplay);
+  }
+}
+
+/*
+ * Get the tail of a list (the list without the first element)
+ * @param {List} list - The list to retrieve the tail from
+ * @return {List}
+ */
+function cdr(list) {
+  if (isAtom(list)) {
+    throw "Cannot take the cdr of an atom";
+  }
+  else if (isNull(list)) {
+    throw "Cannot take the cdr of an empty list";
+  }
+
+  return [...list.children.slice(0, -1)].reduce((list, display) => cons(display, list), newEmptyListFrom(list));
+}
+
+/*
+ * Prepend a display to a list
+ * @param {Display} display - The display to prepend
+ * @param {List} list - The list to prepend to
+ * @return {List}
+ */
+function cons(display, list) {
+  if (isAtom(list)) {
+    throw "Cannot cons onto an atom";
+  }
+
+  const newList = listFrom(list);
+
+  newList.append(display);
+
+  return newList;
+}
+
+/*
+ * Make an emptyList
+ * @return {List}
+ */
+function emptyList() {
+  return blessed.Box({width: "100%", height: "100%"});
+}
+
+/*
+ * Check if a display is an atom or a list
+ * @param {Display} display - The display to control
+ * @return {boolean}
+ */
+function isAtom(display) {
+  return display.border ? true : false;
+}
+
+/*
+ * Check if a list is empty
+ * @param {List} list - The list to control
+ * @return {boolean}
+ */
+function isNull(list) {
+  return !isAtom(list) && list.children.length === 0;
+}
+
+/*
+ * Copy a list, possibly transforming it
+ * @param {List} other - The list to copy
+ * @param {function} [transform: option => option] - The transformation to apply on the options (width, height, left or top)
+ * @return {List}
+ */
 function listFrom(other, transform) {
   if (isAtom(other)) {
     throw "Cannot create a list by copying an atom"
@@ -109,6 +157,13 @@ function newEmptyListFrom(other, transform) {
   }).map(transform)));
 }
 
+// # Rendering
+
+/*
+ * Initialize the rendering engine
+ * @param {Stream.Writable} [output: process.stdout] - The target to render to
+ * @return {function[]} - An array of two functions. The first renders a display passed as argument. The second terminates the rendering engine
+ */
 function renderer(output) {
   // NoInput prevents Blessed screen from catching keyboard input
   class NoInput extends Readable {
@@ -138,6 +193,14 @@ function renderer(output) {
   return [render, close];
 }
 
+// # Integration into the streamer framework
+
+/*
+ * Make a reactive display. See README
+ * @param {Template} template - The template organizing the display
+ * @param {...Component} reactiveComponents - The components parameterizing the display
+ * @return {Composer}
+ */
 function compose(template, ...reactiveComponents) {
   const composer = (...predecessors) => selector => stream => {
     return selector(() => template(...reactiveComponents.map((component, index) => predecessors[index](component)
@@ -149,6 +212,11 @@ function compose(template, ...reactiveComponents) {
   return composer(...reactiveComponents.map(() => f => f()()));
 }
 
+/*
+ * The returned function renders a reactive display. See README
+ * @param {function} render - The render function obtained from calling {@link renderer}
+ * @return {Process} - The returned renderer is a streamer process
+ */
 function show(render) {
   const first = f => g => f;
 
