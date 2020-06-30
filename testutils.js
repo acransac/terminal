@@ -3,6 +3,7 @@ const { Writable } = require('stream');
 const { renderer } = require('./terminal.js');
 const Test = require('tester');
 
+// # Test Runners
 class RenderBuffer extends Writable {
   constructor() {
     super();
@@ -17,20 +18,6 @@ class RenderBuffer extends Writable {
 
 function defer(action) {
   return setImmediate(action);
-}
-
-function writeDisplayControl(produceDisplay, testName, init, continuation) {
-  const control = new RenderBuffer();
-
-  return init(control, (...restAndClose) => {
-    return produceDisplay(...restAndClose.slice(0, -1), () => {
-      restAndClose[restAndClose.length - 1]();
-
-      defer(() => {
-        fs.writeFileSync(`./control_${testName.replace(/ /g, "")}`, control.content, {encoding: "utf8"});
-      });
-    });
-  }, continuation);
 }
 
 function showDisplay(produceDisplay, testName, init, continuation) {
@@ -63,6 +50,21 @@ function verifyDisplay(produceDisplay, testName, init) {
   };
 }
 
+function writeDisplayControl(produceDisplay, testName, init, continuation) {
+  const control = new RenderBuffer();
+
+  return init(control, (...restAndClose) => {
+    return produceDisplay(...restAndClose.slice(0, -1), () => {
+      restAndClose[restAndClose.length - 1]();
+
+      defer(() => {
+        fs.writeFileSync(`./control_${testName.replace(/ /g, "")}`, control.content, {encoding: "utf8"});
+      });
+    });
+  }, continuation);
+}
+
+// # Test Makers
 function makeDisplayTest(produceDisplay, testName, init) {
   return Test.makeTest(verifyDisplay(produceDisplay, testName, init), testName);
 }
@@ -79,6 +81,12 @@ function makeInit() {
   };
 }
 
+/*
+ * Make an inert display test
+ * @param {function} display - A function returning the display test
+ * @param {string} testName - The name of the test, used in logs
+ * @return {TestableDisplay}
+ */
 function makeTestableInertDisplay(display, testName) {
   return [
     (render, finish) => {
@@ -91,6 +99,13 @@ function makeTestableInertDisplay(display, testName) {
   ];
 }
 
+/*
+ * Make a reactive display test. See README
+ * @param {function} produceDisplay - The display test
+ * @param {string} testName - The name of the test, used in logs
+ * @param {function} [init] - The setup of the test
+ * @return {TestableDisplay}
+ */
 function makeTestableReactiveDisplay(produceDisplay, testName, init) {
   return [
     produceDisplay,
@@ -99,17 +114,15 @@ function makeTestableReactiveDisplay(produceDisplay, testName, init) {
   ];
 }
 
-function sequenceReview(review) {
-  const sequencer = testableDisplays => {
-    if (testableDisplays.length === 1) {
-      review(...testableDisplays[0], () => {});
-    }
-    else {
-      review(...testableDisplays[0], () => sequencer(testableDisplays.slice(1)));
-    }
-  };
+// # Setup
 
-  return sequencer;
+/*
+ * Make a test run
+ * @param {TestableDisplay[]} testableDisplays - An array of testable displays to control
+ * @param {string} [testSuiteName: Test Suite] - The name of the test suite, used in logs
+ */
+function reviewDisplays(testableDisplays, testSuiteName) {
+  return runReview(testableDisplays, process.argv, testSuiteName);
 }
 
 function runReview(testableDisplays, commandLineArguments, testSuiteName) {
@@ -132,8 +145,17 @@ function runReview(testableDisplays, commandLineArguments, testSuiteName) {
   }
 }
 
-function reviewDisplays(testableDisplays, testSuiteName) {
-  return runReview(testableDisplays, process.argv, testSuiteName);
+function sequenceReview(review) {
+  const sequencer = testableDisplays => {
+    if (testableDisplays.length === 1) {
+      review(...testableDisplays[0], () => {});
+    }
+    else {
+      review(...testableDisplays[0], () => sequencer(testableDisplays.slice(1)));
+    }
+  };
+
+  return sequencer;
 }
 
 module.exports = {
