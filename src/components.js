@@ -1,3 +1,6 @@
+// Copyright (c) Adrien Cransac
+// License: MIT
+
 const blessed = require('neo-blessed');
 const { atomFrom, car, cdr, cons, isAtom, isNull, listFrom } = require('./terminal.js');
 

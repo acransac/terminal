@@ -1,3 +1,6 @@
+// Copyright (c) Adrien Cransac
+// License: MIT
+
 const blessed = require('neo-blessed');
 const { Readable } = require('stream');
 const { commit } = require('@acransac/streamer');

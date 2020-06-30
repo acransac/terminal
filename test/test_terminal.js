@@ -1,3 +1,6 @@
+// Copyright (c) Adrien Cransac
+// License: MIT
+
 const { column, indent, inline, label, row, sizeHeight, sizeWidth, vindent } = require('../src/components.js');
 const { continuation, forget, later, now, Source, StreamerTest, value } = require('@acransac/streamer');
 const { atom, compose, cons, emptyList, show } = require('../src/terminal.js');

@@ -1,3 +1,6 @@
+// Copyright (c) Adrien Cransac
+// License: MIT
+
 const fs = require('fs');
 const { Writable } = require('stream');
 const { renderer } = require('./terminal.js');
