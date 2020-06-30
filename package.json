@@ -1,13 +1,21 @@
 {
-  "name": "terminal",
-  "version": "0.0.1",
-  "description": "A minimal framework to create a UI in a terminal",
+  "name": "@acransac/terminal",
+  "version": "1.0.0",
+  "description": "A framework to create a UI in a terminal",
   "main": "src/index.js",
   "scripts": {
     "test": "(cd test && node test_terminal.js)"
   },
   "author": "Adrien Cransac",
-  "license": "ISC",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/acransac/terminal.git"
+  },
+  "bugs": {
+    "url": "https://github.com/acransac/terminal/issues"
+  },
+  "homepage": "https://github.com/acransac/terminal",
   "dependencies": {
     "neo-blessed": "^0.2.0",
     "@acransac/streamer": "file:../streamer",
