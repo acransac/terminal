@@ -1,7 +1,7 @@
-const { column, indent, inline, label, row, sizeHeight, sizeWidth, vindent } = require('./components.js');
+const { column, indent, inline, label, row, sizeHeight, sizeWidth, vindent } = require('../src/components.js');
 const { continuation, forget, later, now, Source, StreamerTest, value } = require('@acransac/streamer');
-const { atom, compose, cons, emptyList, show } = require('./terminal.js');
-const Test = require('./testutils.js');
+const { atom, compose, cons, emptyList, show } = require('../src/terminal.js');
+const Test = require('../src/testutils.js');
 
 function test_reactiveDisplay(render, finish) {
   const again = async (stream) => {

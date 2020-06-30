@@ -2,9 +2,9 @@
   "name": "terminal",
   "version": "0.0.1",
   "description": "A minimal framework to create a UI in a terminal",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "(cd test && node test_terminal.js)"
   },
   "author": "Adrien Cransac",
   "license": "ISC",
