@@ -28,8 +28,8 @@ function test_reactiveDisplay(render, finish) {
     return inline(cons(
                     sizeWidth(50, atom(`Odd:\n${oddNumbers}`)),
                     cons(
-  	              sizeWidth(50, atom(`Even:\n${evenNumbers}`)),
-  	              emptyList())));
+                      sizeWidth(50, atom(`Even:\n${evenNumbers}`)),
+                      emptyList())));
   };
 
   Source.from(StreamerTest.emitSequence([{number: 1},
