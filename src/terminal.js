@@ -204,9 +204,9 @@ function renderer(output) {
 function compose(template, ...reactiveComponents) {
   const composer = (...predecessors) => selector => stream => {
     return selector(() => template(...reactiveComponents.map((component, index) => predecessors[index](component)
-	                                                                             (stream)
-	                                                                               (parameters => value => value))))
-	           (composer(...reactiveComponents.map((component, index) => predecessors[index](component)(stream))));
+                                                                                     (stream)
+                                                                                       (parameters => value => value))))
+                     (composer(...reactiveComponents.map((component, index) => predecessors[index](component)(stream))));
   };
 
   return composer(...reactiveComponents.map(() => f => f()()));

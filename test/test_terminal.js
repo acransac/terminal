@@ -17,7 +17,7 @@ function test_reactiveDisplay(render, finish) {
     if (value(now(stream)).hasOwnProperty("number") && maybeShow(value(now(stream)).number)) {
       const previousNumbers = predecessor ? predecessor : "";
 
-      return f => f(noParameters)(`${previousNumbers}${value(now(stream)).number}\n`); 
+      return f => f(noParameters)(`${previousNumbers}${value(now(stream)).number}\n`);
     }
     else {
       return predecessor ? f => f(noParameters)(predecessor) : f => f(noParameters)("");
@@ -26,10 +26,10 @@ function test_reactiveDisplay(render, finish) {
 
   const template = (oddNumbers, evenNumbers) => {
     return inline(cons(
-	            sizeWidth(50, atom(`Odd:\n${oddNumbers}`)),
-	            cons(
-		      sizeWidth(50, atom(`Even:\n${evenNumbers}`)),
-		      emptyList())));
+                    sizeWidth(50, atom(`Odd:\n${oddNumbers}`)),
+                    cons(
+  	              sizeWidth(50, atom(`Even:\n${evenNumbers}`)),
+  	              emptyList())));
   };
 
   Source.from(StreamerTest.emitSequence([{number: 1},
@@ -42,10 +42,10 @@ function test_reactiveDisplay(render, finish) {
                                          {number: 8},
                                          "end"
                                         ]), "onevent")
-		          .withDownstream(async (stream) => {
+        .withDownstream(async (stream) => {
     return again(
-	     await show(render)(
-	       compose(template, showNumbers(n => n % 2 === 1), showNumbers(n => n % 2 === 0)))(stream));
+      await show(render)(
+        compose(template, showNumbers(n => n % 2 === 1), showNumbers(n => n % 2 === 0)))(stream));
   });
 }
 
@@ -73,10 +73,10 @@ Test.reviewDisplays([
     return inline(cons(
                     sizeWidth(20, atom()),
                     cons(
-        	      sizeWidth(30, atom()),
-        	      cons(
-        	        sizeWidth(50, atom()),
-        		emptyList()))));
+                      sizeWidth(30, atom()),
+                      cons(
+                        sizeWidth(50, atom()),
+                        emptyList()))));
   }, "List of Three Atoms Inlined"),
   Test.makeTestableReactiveDisplay(test_reactiveDisplay, "Reactive Display"),
 ]);

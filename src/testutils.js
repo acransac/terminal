@@ -43,7 +43,7 @@ function verifyDisplay(produceDisplay, testName, init) {
         restAndClose[restAndClose.length - 1]();
 
         defer(() => {
-	  return check(fs.readFileSync(`./control_${testName.replace(/ /g, "")}`, {encoding: "utf8"}) === renderBuffer.content);
+          return check(fs.readFileSync(`./control_${testName.replace(/ /g, "")}`, {encoding: "utf8"}) === renderBuffer.content);
         });
       });
     }, finish);
@@ -91,7 +91,7 @@ function makeTestableInertDisplay(display, testName) {
   return [
     (render, finish) => {
       render(display());
-	    
+
       finish();
     },
     testName,
