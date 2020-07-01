@@ -13,7 +13,7 @@ Add **terminal** to a project with:
 and import the needed functionalities:
 
 ```javascript
-    const { atom, column, compose, cons, emptyList, indent, inline, label, renderer, row, show, sizeHeight, sizeWidth, TerminalTest, vindent } = require('@acransac/streamer');
+    const { atom, column, compose, cons, emptyList, indent, inline, label, renderer, row, show, sizeHeight, sizeWidth, TerminalTest, vindent } = require('@acransac/terminal');
 ```
 
 ## Make An Inert Atomic Display
