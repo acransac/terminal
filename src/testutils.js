@@ -4,7 +4,7 @@
 const fs = require('fs');
 const { Writable } = require('stream');
 const { renderer } = require('./terminal.js');
-const Test = require('tester');
+const Test = require('@acransac/tester');
 
 // # Test Runners
 class RenderBuffer extends Writable {

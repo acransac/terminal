@@ -19,6 +19,6 @@
   "dependencies": {
     "neo-blessed": "^0.2.0",
     "@acransac/streamer": "file:../streamer",
-    "tester": "file:../tester"
+    "@acransac/tester": "file:../tester"
   }
 }
