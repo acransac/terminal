@@ -18,7 +18,7 @@
   "homepage": "https://github.com/acransac/terminal",
   "dependencies": {
     "neo-blessed": "^0.2.0",
-    "@acransac/streamer": "file:../streamer",
-    "@acransac/tester": "file:../tester"
+    "@acransac/streamer": "^1.0.0",
+    "@acransac/tester": "^1.0.0"
   }
 }
