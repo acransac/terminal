@@ -205,14 +205,14 @@ function renderer(output) {
  * @return {Composer}
  */
 function compose(template, ...reactiveComponents) {
-  const composer = (...predecessors) => selector => stream => {
-    return selector(() => template(...reactiveComponents.map((component, index) => predecessors[index](component)
-                                                                                     (stream)
-                                                                                       (parameters => value => value))))
-                     (composer(...reactiveComponents.map((component, index) => predecessors[index](component)(stream))));
+  const composer = predecessors => stream => {
+    return (componentsOutputs => {
+      return selector => selector(() => template(...componentsOutputs.map(output => output(parameters => value => value))))
+                           (() => composer(componentsOutputs));
+    })(reactiveComponents.map((component, index) => predecessors[index](component)(stream)));
   };
 
-  return composer(...reactiveComponents.map(() => f => f()()));
+  return composer(reactiveComponents.map(() => f => f()()));
 }
 
 /*
@@ -225,10 +225,12 @@ function show(render) {
 
   const second = f => g => g;
 
-  const shower = component => async (stream) => {
-    render(component(first)(stream)());
+  const shower = composer => async (stream) => {
+    return (composed => {
+      render(composed(first)());
 
-    return commit(stream, shower(component(second)(stream)));
+      return commit(stream, shower(composed(second)()));
+    })(composer(stream));
   };
 
   return shower;
